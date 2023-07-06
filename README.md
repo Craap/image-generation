@@ -48,12 +48,12 @@ This is a repository for my experiments on image generation and related stuff
       <th>Mine</th>
     </tr>
     <tr>
-      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/52ed7733-6e59-4b40-9066-fb60cd611a29"></td>
-      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/6a5785ff-7248-4b49-a71c-358dd5afe5b0"></td>
-      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/a69509fc-b452-433d-b681-9b8391496b73"></td>
-      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/f9a1ce6c-c9c1-479f-a158-7c1eb3fbc9ee"></td>
-      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/9867267d-4b4f-46f5-9c57-4e82361b0348"></td>
-      <td><img width=100 src=https://github.com/Craap/models/assets/110075485/2650a7c8-abec-495a-a889-9b865b84bb86""></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/e8ffb5b8-d49a-461a-bc7a-b98d006fd974"></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/9c859f13-f959-47ca-9c05-ac138b43baa7"></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/59bf3dc6-6b47-4c02-af19-38dfca66826b"></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/0e4a932d-4223-4b0d-a5e6-487a3d6732ad"></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/93c294dc-57ab-4e92-8a2e-fb2581b1d8c7"></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/1064d86a-30ae-4867-974d-4f4b34e1ad6e"></td>
     </tr>
   </table>
 

@@ -3,10 +3,7 @@ venv/
 
 modules/external/
 
-result/images/*
-result/models/*
-
-data/images/*
-data/gelbooru.db
+result/
+data/
 
 data_scraped/

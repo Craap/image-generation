@@ -1,0 +1,12 @@
+venv/
+*__pycache__*
+
+modules/external/
+
+result/images/*
+result/models/*
+
+data/images/*
+data/gelbooru.db
+
+data_scraped/

@@ -55,21 +55,18 @@ if __name__ == "__main__":
         model.eval()
         H, W = 224, 128
 
-        inputs = torch.stack([
-            util.tensor.resize_and_crop(
-                util.tensor.load_tensor("result/truth.png"),
-                H,
-                W
-            )
-        ]).cuda()
+        inputs = util.tensor.load_tensor("result/images/original.png").cuda()
+        save_image(util.tensor.resize_and_crop(inputs, H * 4, W * 4), f"result/images/hr.png")
+
+        inputs = torch.stack([util.tensor.resize_and_crop(inputs, H, W)])
 
         with torch.cuda.amp.autocast():
             with torch.no_grad():
                 output = model(inputs)
 
-        save_image(inputs[0], f"result/input.png")
-        save_image(F.interpolate(inputs, scale_factor=4, mode="bicubic")[0], f"result/bilinear.png")
-        save_image(F.interpolate(output, (H * 4, W * 4), mode="bicubic")[0], f"result/generated.png")
+        save_image(inputs[0], f"result/images/lr.png")
+        save_image(F.interpolate(inputs, scale_factor=4, mode="bicubic")[0], f"result/images/bicubic.png")
+        save_image(F.interpolate(output, (H * 4, W * 4), mode="bicubic")[0], f"result/images/sr.png")
 
     # Train
     i = 1

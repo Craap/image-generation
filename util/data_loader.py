@@ -103,7 +103,7 @@ def load_data_loop(posts: list, tags: list, batch_size: int, batch_queue: Queue)
             # Make 10 256x256 batches out of each batch
             for _ in range(10):
                 batch = {
-                    "inputs": random_crop(random_flip(inputs), 256),
+                    "inputs": random_flip(random_crop(inputs), 256),
                     "labels": torch.stack(labels),
                 }
                 batch_queue.put(batch)

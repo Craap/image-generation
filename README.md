@@ -33,6 +33,8 @@ This is a repository for my experiments on image generation and related stuff
 
   The edge map is created by applying a sobel filter to the ground truth image
 
+  This multiplicative edge loss turned out much better than calculating L1 between edge map of SR and HR, and is the most significant quality improvement I found while training this
+
   <h3>Result</h3>
   See code for hyper parameters
   

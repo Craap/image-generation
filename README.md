@@ -38,6 +38,7 @@ This is a repository for my experiments on image generation and related stuff
   
   Trained for 1 million steps, pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w8_h16.pt">here</a>
 
+  Qualitative comparisons with pretrained SwinIR models:
   <table>
     <tr>
       <th>LR</th>
@@ -60,6 +61,8 @@ This is a repository for my experiments on image generation and related stuff
   Sample image is generated with Stable Diffusion, using my personal trained LoRA
 
   <a href="https://github.com/JingyunLiang/SwinIR">SwinIR</a> is used for comparisons here because other models have too many files and I'm lazy
+
+  I used pretrained weights for SwinIR instead of training on the same dataset, so that might be a little unfair for SwinIR
 
   All pretrained weights for Swin-M produce NaNs for me, so there is no result
 

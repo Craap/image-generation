@@ -59,6 +59,9 @@ def center_crop(tensor: Tensor, divisible_by: int) -> Tensor:
 def random_crop(tensor: Tensor, size) -> Tensor:
     return transforms.RandomCrop(size)(tensor)
 
+def random_flip(tensor: Tensor) -> Tensor:
+    return transforms.RandomVerticalFlip()(transforms.RandomHorizontalFlip()(tensor))
+
 def resize(tensor: Tensor, max_area: int) -> Tensor:
     """Returns `tensor` with the same aspect ratio such that its area is at most `max_area`"""
     

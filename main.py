@@ -6,8 +6,8 @@ from torchvision.utils import save_image
 
 import util.data_loader
 import util.tensor
-from modules.attention import TransformerSR
-from util.database import GelbooruDatabase
+from .modules.attention import TransformerSR
+from .util.database import GelbooruDatabase
 
 if __name__ == "__main__":
     batch_size = 1
@@ -38,7 +38,7 @@ if __name__ == "__main__":
 
     # Start producer for loading images
     if is_training:
-        batch_queue = multiprocessing.Queue(10)
+        batch_queue = multiprocessing.Queue(50)
         multiprocessing.Process(target=util.data_loader.load_data_loop, args=(posts, tags, batch_size, batch_queue)).start()
 
     # Model initialization
@@ -55,8 +55,8 @@ if __name__ == "__main__":
         model.eval()
         H, W = 224, 128
 
-        inputs = util.tensor.load_tensor("result/images/original.png").cuda()
-        save_image(util.tensor.resize_and_crop(inputs, H * 4, W * 4), f"result/images/hr.png")
+        inputs = util.tensor.load_tensor("result/original.png").cuda()
+        save_image(util.tensor.resize_and_crop(inputs, H * 4, W * 4), f"result/hr.png")
 
         inputs = torch.stack([util.tensor.resize_and_crop(inputs, H, W)])
 
@@ -64,9 +64,9 @@ if __name__ == "__main__":
             with torch.no_grad():
                 output = model(inputs)
 
-        save_image(inputs[0], f"result/images/lr.png")
-        save_image(F.interpolate(inputs, scale_factor=4, mode="bicubic")[0], f"result/images/bicubic.png")
-        save_image(F.interpolate(output, (H * 4, W * 4), mode="bicubic")[0], f"result/images/sr.png")
+        save_image(inputs[0], f"result/lr.png")
+        save_image(F.interpolate(inputs, scale_factor=4, mode="bicubic")[0], f"result/bicubic.png")
+        save_image(F.interpolate(output, (H * 4, W * 4), mode="bicubic")[0], f"result/sr.png")
 
     # Train
     i = 1
@@ -80,16 +80,13 @@ if __name__ == "__main__":
             # Sobel filter
             gx = torch.stack([torch.Tensor([[[1,0,-1],[2,0,-2],[1,0,-1]]])] * 3).cuda()
             gy = torch.stack([torch.Tensor([[[1,2,1],[0,0,0],[-1,-2,-1]]])] * 3).cuda()
-            edge_map = torch.clamp(
-                (
-                    F.conv2d(inputs, weight=gx, padding=1,groups=3) ** 2 +
-                    F.conv2d(inputs, weight=gy, padding=1,groups=3) ** 2
-                ) ** 0.5,
-                0.05
-            ).detach()
+            edge_map = (
+                F.conv2d(inputs, weight=gx, padding=1,groups=3) ** 2 +
+                F.conv2d(inputs, weight=gy, padding=1,groups=3) ** 2
+            ) ** 0.5
 
             output = model(inputs_degraded)
-            loss = (torch.abs(output - inputs) * edge_map).mean()
+            loss = (torch.abs(output - inputs) * edge_map.detach()).mean()
 
         scaler.scale(loss).backward()
         scaler.step(optimizer)

@@ -4,7 +4,7 @@ from multiprocessing import Queue
 import torch
 from torch import Tensor
 
-from util.tensor import load_tensor, random_crop, resize_and_crop
+from .tensor import load_tensor, random_crop, random_flip, resize_and_crop
 
 
 def get_aspect_ratios(divisible_by: int, min_side: int, max_area: int):
@@ -103,7 +103,7 @@ def load_data_loop(posts: list, tags: list, batch_size: int, batch_queue: Queue)
             # Make 10 256x256 batches out of each batch
             for _ in range(10):
                 batch = {
-                    "inputs": random_crop(inputs, 256),
+                    "inputs": random_crop(random_flip(inputs), 256),
                     "labels": torch.stack(labels),
                 }
                 batch_queue.put(batch)

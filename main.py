@@ -6,8 +6,8 @@ from torchvision.utils import save_image
 
 import util.data_loader
 import util.tensor
-from .modules.attention import TransformerSR
-from .util.database import GelbooruDatabase
+from modules.attention import TransformerSR
+from util.database import GelbooruDatabase
 
 if __name__ == "__main__":
     batch_size = 1

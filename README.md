@@ -57,6 +57,10 @@ This is a repository for my experiments on image generation and related stuff
     </tr>
   </table>
 
+  <a href="https://github.com/JingyunLiang/SwinIR">SwinIR</a> is used for comparisons here because other models have too many files and I'm lazy
+
+  All pretrained weights for Swin-M produce NaNs for me, so there is no result
+
   <h3>TODO</h3>
 
   - Due to downsampling, image is shifted to the top left, fix this

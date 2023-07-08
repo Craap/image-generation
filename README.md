@@ -38,7 +38,7 @@ This is a repository for my experiments on image generation and related stuff
   <h3>Result</h3>
   See code for hyper parameters
   
-  Trained for 1 million steps at learning rate 10<sup>-5</sup>, then another 450k steps at 10<sup>-4</sup>, pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w8_h16.pt">here</a>
+  Trained for 1 million steps at learning rate 10<sup>-5</sup>, then another 450k steps at 10<sup>-4</sup>, pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w4_h16.pt">here</a>
 
   Qualitative comparisons with pretrained SwinIR models:
   <table>

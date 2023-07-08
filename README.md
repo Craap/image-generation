@@ -38,7 +38,7 @@ This is a repository for my experiments on image generation and related stuff
   <h3>Result</h3>
   See code for hyper parameters
   
-  Trained for 1 million steps at learning rate 10<sup>-5</sup>, then another 450k steps at 10<sup>-4</sup>, pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w4_h16.pt">here</a>
+  Trained for 1 million steps at learning rate 1e-5>, then another 450k steps at 1e-4, and finally 50k steps at 3e-5, pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w4_h16.pt">here</a>
 
   Qualitative comparisons with pretrained SwinIR models:
   <table>
@@ -56,7 +56,8 @@ This is a repository for my experiments on image generation and related stuff
       <td><img width=100 src="https://github.com/Craap/models/assets/110075485/59bf3dc6-6b47-4c02-af19-38dfca66826b"></td>
       <td><img width=100 src="https://github.com/Craap/models/assets/110075485/0e4a932d-4223-4b0d-a5e6-487a3d6732ad"></td>
       <td><img width=100 src="https://github.com/Craap/models/assets/110075485/93c294dc-57ab-4e92-8a2e-fb2581b1d8c7"></td>
-      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/aab013ee-2c0c-4587-8530-c7ae8cf896e5"></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/671bb21f-55c9-406f-8718-77e414857e0a"></td>
+
     </tr>
   </table>
 

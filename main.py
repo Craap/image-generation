@@ -42,10 +42,10 @@ if __name__ == "__main__":
         multiprocessing.Process(target=util.data_loader.load_data_loop, args=(posts, tags, batch_size, batch_queue)).start()
 
     # Model initialization
-    model = TransformerSR(factor=4, residual_groups=[], num_blocks=8, dim=256, window_size=8, num_heads=16).cuda()
-    model.load_state_dict(torch.load("result/models/transformerSR_b8_d256_w8_h16.pt"))
+    model = TransformerSR(factor=4, residual_groups=[], num_blocks=8, dim=256, window_size=4, num_heads=16).cuda()
+    model.load_state_dict(torch.load("result/models/super_resolution.pt"))
 
-    optimizer = torch.optim.AdamW(model.parameters(), lr=1e-5)
+    optimizer = torch.optim.AdamW(model.parameters(), lr=3e-5)
     scaler = torch.cuda.amp.GradScaler()
 
     print(f"Number of parameters: {sum(param.numel() for param in model.parameters())}")
@@ -53,9 +53,9 @@ if __name__ == "__main__":
     # Test
     if not is_training:
         model.eval()
-        H, W = 224, 128
+        H, W = 160, 128
 
-        inputs = util.tensor.load_tensor("result/original.png").cuda()
+        inputs = util.tensor.load_tensor("result/ayanami.png").cuda()
         save_image(util.tensor.resize_and_crop(inputs, H * 4, W * 4), f"result/hr.png")
 
         inputs = torch.stack([util.tensor.resize_and_crop(inputs, H, W)])
@@ -65,8 +65,11 @@ if __name__ == "__main__":
                 output = model(inputs)
 
         save_image(inputs[0], f"result/lr.png")
-        save_image(F.interpolate(inputs, scale_factor=4, mode="bicubic")[0], f"result/bicubic.png")
         save_image(F.interpolate(output, (H * 4, W * 4), mode="bicubic")[0], f"result/sr.png")
+
+    # Sobel filter
+    gx = torch.stack([torch.Tensor([[[1,0,-1],[2,0,-2],[1,0,-1]]])] * 3).cuda()
+    gy = torch.stack([torch.Tensor([[[1,2,1],[0,0,0],[-1,-2,-1]]])] * 3).cuda()
 
     # Train
     i = 1
@@ -77,9 +80,6 @@ if __name__ == "__main__":
         inputs_degraded = util.tensor.random_degrade(inputs, 1/4)
 
         with torch.cuda.amp.autocast():
-            # Sobel filter
-            gx = torch.stack([torch.Tensor([[[1,0,-1],[2,0,-2],[1,0,-1]]])] * 3).cuda()
-            gy = torch.stack([torch.Tensor([[[1,2,1],[0,0,0],[-1,-2,-1]]])] * 3).cuda()
             edge_map = (
                 F.conv2d(inputs, weight=gx, padding=1,groups=3) ** 2 +
                 F.conv2d(inputs, weight=gy, padding=1,groups=3) ** 2

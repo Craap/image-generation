@@ -19,11 +19,11 @@ This is a repository for my experiments on image generation and related stuff
   
   Dataset is 240 handpicked images from the internet
   
-  Samples are random cropped to create more data
+  Samples are random cropped and random flipped to create more data
 
   To obtain LR samples, the HR samples are downsampled using a uniformly chosen method between bilinear, bicubic, and area
   
-  I also tried random blurring and random noise too for a few training steps, but it didn't seem to produce good results, and random cropping is already enough to not overfit
+  I also tried random blurring and random noise too for a few training steps, but it didn't seem to produce good results, and random cropping and flipping is already enough to not overfit
   
   <h3>Loss function</h3>
   
@@ -35,10 +35,26 @@ This is a repository for my experiments on image generation and related stuff
 
   This multiplicative edge loss turned out much better than calculating L1 between edge map of SR and HR, and is the most significant quality improvement I found while training this
 
-  <h3>Result</h3>
-  See code for hyper parameters
+  <h3>Hyper paramters</h3>
+  Model:
+
+  - Attention window size: 4
+  - Number of attention blocks: 16 (8 of each type)
+  - Hidden dimensions: 256
+  - Number of attention heads: 16
   
-  Trained for 1 million steps at learning rate 1e-5, then another 450k steps at 1e-4, and finally 50k steps at 3e-5, pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w4_h16.pt">here</a>
+  Learning rate: seems like 5e-5 is good balance for stability and speed
+  
+  - 1 million steps at 1e-5
+  - 450k steps at 1e-4
+  - 50k steps at 3e-5
+  - 700k steps at 5e-5
+
+  <h3>Result</h3>
+  
+  Pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w4_h16.pt">here</a>
+
+  Quantitatively, my model has worse PSNR than <a href="https://github.com/JingyunLiang/SwinIR">SwinIR</a> (and others), but qualitatively I think it looks better, at least on anime style images
 
   Qualitative comparisons with pretrained SwinIR models:
   <table>
@@ -56,13 +72,13 @@ This is a repository for my experiments on image generation and related stuff
       <td><img width=100 src="https://github.com/Craap/models/assets/110075485/59bf3dc6-6b47-4c02-af19-38dfca66826b"></td>
       <td><img width=100 src="https://github.com/Craap/models/assets/110075485/0e4a932d-4223-4b0d-a5e6-487a3d6732ad"></td>
       <td><img width=100 src="https://github.com/Craap/models/assets/110075485/93c294dc-57ab-4e92-8a2e-fb2581b1d8c7"></td>
-      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/671bb21f-55c9-406f-8718-77e414857e0a"></td>
+      <td><img width=100 src="https://github.com/Craap/models/assets/110075485/25aa2832-15a6-4b28-8eaf-62ad2a8290c9"></td>
     </tr>
   </table>
 
   Sample image is generated with Stable Diffusion, using my personal trained LoRA
 
-  <a href="https://github.com/JingyunLiang/SwinIR">SwinIR</a> is used for comparisons here because other models have too many files and I'm lazy
+  SwinIR is used for comparisons here because other models have too many files and I'm lazy
 
   I used pretrained weights for SwinIR instead of training on the same dataset, so that might be a little unfair for SwinIR
 

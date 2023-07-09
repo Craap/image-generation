@@ -48,7 +48,7 @@ This is a repository for my experiments on image generation and related stuff
   - 1 million steps at 1e-5
   - 450k steps at 1e-4
   - 50k steps at 3e-5
-  - 700k steps at 5e-5
+  - 1500k steps at 5e-5
 
   Other:
 

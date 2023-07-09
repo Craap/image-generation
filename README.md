@@ -43,12 +43,18 @@ This is a repository for my experiments on image generation and related stuff
   - Hidden dimensions: 256
   - Number of attention heads: 16
   
-  Learning rate: seems like 5e-5 is good balance for stability and speed
+  Learning rate (seems 5e-5 is good balance between stability and speed):
   
   - 1 million steps at 1e-5
   - 450k steps at 1e-4
   - 50k steps at 3e-5
   - 700k steps at 5e-5
+
+  Other:
+
+  - Batch size: 1
+  - LR image size: 64x64
+  
 
   <h3>Result</h3>
   

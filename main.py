@@ -53,7 +53,7 @@ if __name__ == "__main__":
     # Test
     if not is_training:
         model.eval()
-        H, W = 160, 128
+        H, W = 224, 128
 
         inputs = util.tensor.load_tensor("result/ayanami.png").cuda()
         save_image(util.tensor.resize_and_crop(inputs, H * 4, W * 4), f"result/hr.png")
@@ -86,7 +86,7 @@ if __name__ == "__main__":
             ) ** 0.5
 
             output = model(inputs_degraded)
-            loss = (torch.abs(output - inputs) * edge_map.detach()).mean()
+            loss = (torch.abs(output - inputs) * edge_map.detach()).sum() / edge_map.sum()
 
         scaler.scale(loss).backward()
         scaler.step(optimizer)

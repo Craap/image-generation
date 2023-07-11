@@ -43,7 +43,7 @@ This is a repository for my experiments on image generation and related stuff
   - Hidden dimensions: 256
   - Number of attention heads: 16
   
-  Learning rate (seems 5e-5 is good balance between stability and speed):
+  Learning rate (seems 3e-5 after normalization is good balance between stability and speed):
   
   - 1 million steps at 1e-5
   - 450k steps at 1e-4

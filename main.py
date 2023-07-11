@@ -77,7 +77,7 @@ if __name__ == "__main__":
         batch = batch_queue.get()
         inputs = batch["inputs"].cuda()
 
-        inputs_degraded = util.tensor.random_degrade(inputs, 1/4)
+        inputs_lr = util.tensor.random_downsample(1/4)(inputs)
 
         with torch.cuda.amp.autocast():
             edge_map = (
@@ -85,7 +85,7 @@ if __name__ == "__main__":
                 F.conv2d(inputs, weight=gy, padding=1,groups=3) ** 2
             ) ** 0.5
 
-            output = model(inputs_degraded)
+            output = model(inputs_lr)
             loss = (torch.abs(output - inputs) * edge_map.detach()).sum() / edge_map.sum()
 
         scaler.scale(loss).backward()
@@ -96,7 +96,7 @@ if __name__ == "__main__":
         print(f"\r#{i:<6d} - loss: {loss.item():8.4f}",end="")
         if (i % 1000 == 0):
             print(f" saved as result/images/{i}.png - model saved")
-            save_image(inputs_degraded[0], f"result/images/{i}_lr.png")
+            save_image(inputs_lr[0], f"result/images/{i}_lr.png")
             save_image(inputs[0], f"result/images/{i}_hr.png")
             save_image(output[0], f"result/images/{i}.png")
             torch.save(model.state_dict(), "result/models/super_resolution.pt")

@@ -75,20 +75,16 @@ def resize(tensor: Tensor, max_area: int) -> Tensor:
         antialias=True
     )(tensor)
 
-def random_degrade(tensor: Tensor, scale_factor: float) -> Tensor:
-    blur = transforms.GaussianBlur(random.choice([i * 2 + 1 for i in range(0, 2)]))
+def random_downsample(scale_factor: float):
+    """Returns downsample function with randomly chosen method"""
+    mode = random.choice(["bilinear", "bicubic", "area"])
+    antialias = False if mode == "area" else True
+    return lambda tensor: F.interpolate(tensor, scale_factor=scale_factor, mode=mode, antialias=antialias)
 
-    def noise(tensor: Tensor) -> Tensor:
-        return tensor + torch.randn_like(tensor) * (random.random() * .01) ** 0.5
-    
-    def downsample(tensor: Tensor) -> Tensor:
-        mode = random.choice(["bilinear", "bicubic", "area"])
-        antialias = False if mode == "area" else True
-        return F.interpolate(tensor, scale_factor=scale_factor, mode=mode, antialias=antialias)
-    
-    operations = [downsample]
-    random.shuffle(operations)
-    for operation in operations:
-        tensor = operation(tensor)
-    
-    return tensor
+def random_noise(variance: float):
+    """Returns gaussian noise function with randomly chosen variance"""
+    return lambda tensor: tensor + torch.randn_like(tensor) * (random.random() * variance) ** 0.5
+
+def random_blur(kernel_sizes: list | tuple):
+    """Returns gaussian blur function with randomly chosen kernel size"""
+    return transforms.GaussianBlur(random.choice(kernel_sizes))

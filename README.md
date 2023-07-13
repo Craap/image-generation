@@ -7,58 +7,42 @@ This is a repository for my experiments on image generation and related stuff
 
 <h1>Super resolution</h1>
 
-  <h3>Architecture</h3>
+  <h2>Architecture</h2>
   
-  The architecture is similar to <a href="https://arxiv.org/pdf/2204.03645v1.pdf">DaViT</a> (probably), except I don't split channel attention into groups.
+  The architecture is similar to <a href="https://arxiv.org/pdf/2204.03645v1.pdf">DaViT</a> (probably, haven't checked the code), except I don't split channel attention into groups.
 
-  Basically the model is an alternating sequence of window attention and group attention, with pixel shuffle upscaling at the end
-
-  I also tried to use a lot of residual connections between the layers, following most SR models, but in the end decided to omit them for simplicity
+  Basically the model is sequence of alternating window attention and group attention, followed by a single convolution and pixel shuffle upscaling at the end
   
-  <h3>Data</h3>
+  <h2>Data</h2>
   
   Dataset is 240 handpicked images from the internet
   
-  Samples are random cropped and random flipped to create more data
-
-  To obtain LR samples, the HR samples are downsampled using a uniformly chosen method between bilinear, bicubic, and area
+  <h2>Loss function</h2>
   
-  I also tried random blurring and random noise too for a few training steps, but it didn't seem to produce good results, and random cropping and flipping is already enough to not overfit
+  Loss function is L1 loss multiplied with an edge map
   
-  <h3>Loss function</h3>
+  The edge map is obtained by applying a sobel filter to the HR image
+
+  <h2>Hyper parameters</h2>
   
-  For the first half of training, only L1 loss is used
-  
-  I tried to make the loss more focused on high frequency details (edges) by multiplying the L1 loss (before reduction) with an edge map, this produced much better results
-
-  The edge map is created by applying a sobel filter to the ground truth image
-
-  This multiplicative edge loss turned out much better than calculating L1 between edge map of SR and HR, and is the most significant quality improvement I found while training this
-
-  <h3>Hyper paramters</h3>
   Model:
 
   - Attention window size: 4
-  - Number of attention blocks: 16 (8 of each type)
-  - Hidden dimensions: 256
+  - Number of attention blocks: 16 (8 window attention and 8 channel attention blocks)
+  - Hidden dimension: 256
   - Number of attention heads: 16
   
-  Learning rate (seems 3e-5 after normalization is good balance between stability and speed):
-  
-  - 1 million steps at 1e-5
-  - 450k steps at 1e-4
-  - 50k steps at 3e-5
-  - 1500k steps at 5e-5
-
   Other:
 
+  - Learning rate: constant 3e-5
+  - Training steps: 2 million
   - Batch size: 1
-  - LR image size: 64x64
+  - Images are scaled to a max area of 1 million pixels, then random cropped to 256 x 256 and random flipped to obtain the HR image, LR image is 64 x 64
   
 
-  <h3>Result</h3>
+  <h2>Result</h2>
   
-  Pretrained weights <a href="https://huggingface.co/Craap/models/blob/main/transformerSR_b8_d256_w4_h16.pt">here</a>
+  Pretrained weights <a href="https://huggingface.co/Craap/image-generation/blob/main/transformerSR_b8_d256_w4_h16.pt">here</a>
 
   Quantitatively, my model has worse PSNR than <a href="https://github.com/JingyunLiang/SwinIR">SwinIR</a> (and others), but qualitatively I think it looks better, at least on anime style images
 
@@ -90,8 +74,7 @@ This is a repository for my experiments on image generation and related stuff
 
   All pretrained weights for Swin-M produce NaNs for me, so there is no result
 
-  <h3>TODO</h3>
+  <h2>TODO</h2>
 
-  - Due to downsampling, image is shifted to the top left, fix this
   - Implement GAN loss
   - Improve it somehow

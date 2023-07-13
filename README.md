@@ -11,7 +11,7 @@ This is a repository for my experiments on image generation and related stuff
   
   The architecture is similar to <a href="https://arxiv.org/pdf/2204.03645v1.pdf">DaViT</a> (probably, haven't checked the code), except I don't split channel attention into groups.
 
-  Basically the model is sequence of alternating window attention and group attention, followed by a single convolution and pixel shuffle upscaling at the end
+  Basically the model is a single convolution applied to the input, followed by a sequence of alternating window attention and group attention, followed by a single convolution and pixel shuffle upscaling at the end
   
   <h2>Data</h2>
   

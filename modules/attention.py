@@ -32,12 +32,12 @@ def spatial_unflatten(x: Tensor, H: int, W: int) -> Tensor:
     """Unflattens (*, H * W, C) into (*, C, H, W)"""
     return x.transpose(-2, -1).unflatten(-1, (H, W))
 
-class MultiHeadSelfAttention(nn.Module):
+class MultiHeadAttention(nn.Module):
     """
-    Performs multi head self attention on the input sequence,
+    Performs multi head attention on the input sequence,
     can also transpose inputs before performing attention
-    - Input: (B, N, L, `dim`)
-    - Output: (B, N, L, `dim`)
+    - Input: (*, L, `dim`)
+    - Output: (*, L, `dim`)
     """
 
     def __init__(self, dim: int, transposed: bool, num_heads: int = 8) -> None:
@@ -52,43 +52,55 @@ class MultiHeadSelfAttention(nn.Module):
         self.dim = dim
         self.transposed = transposed
         self.num_heads = num_heads
-        self.qkv = nn.Linear(dim, dim * 3)
-        self.out = nn.Linear(dim, dim)
+        self.project_q = nn.Linear(dim, dim)
+        self.project_k = nn.Linear(dim, dim)
+        self.project_v = nn.Linear(dim, dim)
+        self.project_out = nn.Linear(dim, dim)
     
-    def forward(self, x: Tensor) -> Tensor:
-        B, N, L, C = x.shape
+    def forward(self, q: Tensor, k: Tensor, v: Tensor) -> Tensor:
+        L, C = q.shape[-2], q.shape[-1]
         head_dim = C // self.num_heads
 
-        x = self.qkv(x)
-        x = (
-            x.reshape(B, N, L, 3, self.num_heads, head_dim)
-             .permute(3, 0, 1, 4, 2, 5)
-        ) # (3, B, N, num_heads, L, head_dim)
+        q = (
+            self.project_q(q)
+            .unflatten(-1, (self.num_heads, head_dim))
+            .transpose(-2, -3)
+        )
+        k = (
+            self.project_k(k)
+            .unflatten(-1, (self.num_heads, head_dim))
+            .transpose(-2, -3)
+        )
+        v = (
+            self.project_v(v)
+            .unflatten(-1, (self.num_heads, head_dim))
+            .transpose(-2, -3)
+        )
 
         if self.transposed:
             x = torch.matmul(
                 F.softmax(
                     torch.matmul(
-                        x[0].transpose(-2, -1) / L,
-                        x[1] / L
+                        q.transpose(-2, -1) / L,
+                        k / L
                     ),
                     -1
                 ),
-                x[2].transpose(-2, -1)
-            ).permute(0, 1, 4, 2, 3) # (B, N, L, num_heads, head_dim)
+                v.transpose(-2, -1)
+            ).transpose(-1, -3).transpose(-1, -2)
         else: 
             x = torch.matmul(
                 F.softmax(
                     torch.matmul(
-                        x[0] / head_dim,
-                        x[1].transpose(-2, -1) / head_dim
+                        q / head_dim,
+                        k.transpose(-2, -1) / head_dim
                     ),
                     -1
                 ),
-                x[2]
-            ).permute(0, 1, 3, 2, 4) # (B, N, L, num_heads, head_dim)
+                v
+            ).transpose(-2, -3)
         
-        x = self.out(
+        x = self.project_out(
             x.flatten(-2)
         )
 
@@ -96,7 +108,7 @@ class MultiHeadSelfAttention(nn.Module):
     
 class AttentionBlock(nn.Module):
     """
-    Block of `MultiHeadSelfAttention` > `Linear` > `Linear`
+    Block of `MultiHeadAttention` > `Linear` > `Linear`
     - Input: (B, N, `dim`)
     - Output: (B, N, `dim`)
     """
@@ -113,7 +125,7 @@ class AttentionBlock(nn.Module):
         super().__init__()
         self.window_size = window_size
         self.transposed = transposed
-        self.window_attention = MultiHeadSelfAttention(dim, transposed, num_heads)
+        self.window_attention = MultiHeadAttention(dim, transposed, num_heads)
         self.mlp = nn.Sequential(
             nn.Linear(dim, dim * 4),
             nn.GELU(),
@@ -131,7 +143,9 @@ class AttentionBlock(nn.Module):
             x = window_partition(x, self.window_size)
         x = spatial_flatten(x)
 
-        x = x + self.window_attention(self.norm1(x))
+        x_residual = x
+        x = self.norm1(x)
+        x = x_residual + self.window_attention(x, x, x)
         x = x + self.mlp(self.norm2(x))
 
         if self.transposed:
@@ -143,7 +157,7 @@ class AttentionBlock(nn.Module):
 
         return x
     
-class TransformerSR(nn.Module):
+class SR(nn.Module):
     """
     Sequence of `AttentionBlock` with pixel shuffle upsampling at the end
     - Input: (B, `dim`, H, W)
@@ -153,7 +167,6 @@ class TransformerSR(nn.Module):
     def __init__(
             self,
             factor: int,
-            residual_groups: list,
             num_blocks: int,
             dim: int,
             window_size: int,
@@ -164,7 +177,6 @@ class TransformerSR(nn.Module):
         """
         Parameters:
         - `factor`: upscaling factor, must be a power of 2
-        - `residual_groups`: number of blocks between skip connections, supports multiple numbers
         - `num_blocks`: number of blocks
         - `dim`: number of channels of the main path through the model
         - `window_size`: attention window size
@@ -174,37 +186,21 @@ class TransformerSR(nn.Module):
         """
         
         super().__init__()
-        self.residual_groups = residual_groups
-        self.in_conv = nn.Conv2d(in_channels, dim, kernel_size=3, padding=1)
-        self.blocks = nn.ModuleList(
-            nn.Sequential(
-                AttentionBlock(dim, False, window_size, num_heads),
-                AttentionBlock(dim, True, window_size, num_heads)
-            ) for _ in range(num_blocks)
-        )
-        self.out_conv = nn.Sequential(
+        self.layers = nn.Sequential(
+            nn.Conv2d(in_channels, dim, kernel_size=3, padding=1),
+            *[
+                nn.Sequential(
+                    AttentionBlock(dim, False, window_size, num_heads),
+                    AttentionBlock(dim, True, window_size, num_heads)
+                ) for _ in range(num_blocks)
+            ],
             nn.Conv2d(dim, (factor ** 2) * out_channels, kernel_size=3, padding=1),
             nn.PixelShuffle(factor)
         )
     
     def forward(self, x: Tensor) -> Tensor:
-        residual = {k: 0 for k in self.residual_groups}
         x = x - 0.5
-
-        x = self.in_conv(x)
-
-        for i, block in enumerate(self.blocks):
-            for step in residual.keys():
-                if i % step == 0:
-                    residual[step] = x
-
-            x = block(x)
-            
-            for step in residual.keys():
-                if i % step == step - 1:
-                    x = x + residual[step]
-
-        x = self.out_conv(x)
+        x = self.layers(x)
         return x + 0.5
     
 class Classifier(nn.Module):

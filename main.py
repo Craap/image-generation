@@ -6,7 +6,7 @@ from torchvision.utils import save_image
 
 import util.data_loader
 import util.tensor
-from modules.attention import TransformerSR
+from modules.attention import SR
 from util.database import GelbooruDatabase
 
 if __name__ == "__main__":
@@ -42,7 +42,7 @@ if __name__ == "__main__":
         multiprocessing.Process(target=util.data_loader.load_data_loop, args=(posts, tags, batch_size, batch_queue)).start()
 
     # Model initialization
-    model = TransformerSR(factor=4, residual_groups=[], num_blocks=8, dim=256, window_size=4, num_heads=16).cuda()
+    model = SR(factor=4, num_blocks=8, dim=256, window_size=4, num_heads=16).cuda()
     model.load_state_dict(torch.load("result/models/super_resolution.pt"))
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=3e-5)
